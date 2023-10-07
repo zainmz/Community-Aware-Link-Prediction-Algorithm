@@ -42,7 +42,7 @@ def get_community_strength(u, v, communities, neighbors_dict):
 
 # Check if pre-processed features exist_
 if os.path.exists('features.pkl'):
-    # Load features from file
+    # Load file
     with open('features.pkl', 'rb') as file:
         data = pickle.load(file)
         X = data['features']
@@ -68,12 +68,12 @@ else:
         y.append(1 if (u, v) in sampled_edges else 0)
         print(f"Processed {index + 1}/{len(sampled_edges) + len(sampled_non_edges)} node pairs.")
 
-    # Save features to file
+    # Save to file
     with open('features.pkl', 'wb') as file:
         pickle.dump({'features': X, 'labels': y}, file)
 
 # Split data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+Z_train, Z_test, a_train, a_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Check if a pre-trained model exists
 if os.path.exists('model.pkl'):
@@ -83,21 +83,21 @@ if os.path.exists('model.pkl'):
 else:
     # Train a new model
     classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-    classifier.fit(X_train, y_train)
-    # Save the trained model
+    classifier.fit(Z_train, a_train)
+    # Save model
     with open('model.pkl', 'wb') as file:
         pickle.dump(classifier, file)
 
 # Predict potential links
-y_pred = classifier.predict(X)
-print(f"Number of potential future links: {sum(y_pred)}")
+a_pred = classifier.predict(X)
+print(f"Number of potential future links: {sum(a_pred)}")
 
 # Visualization of Predicted links
 sample_size = 1
 edges = list(G.edges())
 non_edges = list(nx.non_edges(G))
 sampled_non_edges = random.sample(non_edges, int(sample_size * len(non_edges)))
-predicted_links = [pair for i, pair in enumerate(sampled_non_edges) if y_pred[i] == 1]
+predicted_links = [pair for i, pair in enumerate(sampled_non_edges) if a_pred[i] == 1]
 
 # Draw the original graph
 pos = nx.spring_layout(G)
